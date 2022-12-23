@@ -1,0 +1,10 @@
+buildPro.sh
+gojumpdb
+gojump
+gojump.log
+initDB
+initProDB
+.vscode
+!pkg/initDB
+!cmd/initDB
+pkg/initDB/initProData.go
