@@ -14,6 +14,7 @@ func (h *InteractiveHandler) Dispatch() {
 	checkChan := make(chan bool)
 	go h.checkMaxIdleTime(checkChan)
 	if h.selectHandler.HasJustOneAsset() {
+		checkChan <- false
 		h.selectHandler.SearchOrProxy("")
 		return
 	}

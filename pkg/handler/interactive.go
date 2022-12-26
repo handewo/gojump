@@ -52,11 +52,11 @@ func checkMaxIdleTime(maxIdleMinutes int, user *model.User, sess ssh.Session, ch
 			return
 		case checkStatus = <-checkChan:
 			if !checkStatus {
-				log.Debug.Printf("Stop checking user %s idle time if more than %d minutes", user.Username, maxIdleMinutes)
+				//log.Debug.Printf("Stop checking user %s idle time if more than %d minutes", user.Username, maxIdleMinutes)
 				continue
 			}
 			tick.Reset(maxIdleTime)
-			log.Debug.Printf("Start checking user %s idle time if more than %d minutes", user.Username, maxIdleMinutes)
+			//log.Debug.Printf("Start checking user %s idle time if more than %d minutes", user.Username, maxIdleMinutes)
 		}
 	}
 }
