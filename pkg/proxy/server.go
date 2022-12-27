@@ -212,7 +212,7 @@ func (s *Server) sendConnectErrorMsg(err error) {
 	password := s.connOpts.systemUser.Password
 	if password != "" {
 		msg2 := fmt.Sprintf("Try password: %s", password[:2]+strings.Repeat("*", 8))
-		log.Error.Print(msg2)
+		log.Info.Print(msg2)
 	}
 }
 
@@ -509,4 +509,19 @@ func (s *Server) ConvertErrorToReadableMsg(e error) string {
 		return "network is unreachable"
 	}
 	return errMsg
+}
+
+func (s *Server) GetReplayRecorder() *ReplyRecorder {
+	pty := s.UserConn.Pty()
+	info := &ReplyInfo{
+		Width:     pty.Window.Width,
+		Height:    pty.Window.Height,
+		TimeStamp: time.Now(),
+	}
+	recorder, err := NewReplayRecord(s.ID, s.connOpts.user.Username,
+		s.connOpts.asset.Name, info)
+	if err != nil {
+		log.Error.Print(err)
+	}
+	return recorder
 }

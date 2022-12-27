@@ -45,10 +45,10 @@ func checkMaxIdleTime(maxIdleMinutes int, user *model.User, sess ssh.Session, ch
 				msg := fmt.Sprintf("Connect idle more than %d minutes, disconnect", maxIdleMinutes)
 				_, _ = io.WriteString(sess, "\r\n"+msg+"\r\n")
 				_ = sess.Close()
-				log.Info.Printf("User %s input idle more than %d minutes", user.Username, maxIdleMinutes)
+				log.Debug.Printf("User %s input idle more than %d minutes", user.Username, maxIdleMinutes)
 			}
 		case <-sess.Context().Done():
-			log.Info.Printf("Stop checking user %s input idle time", user.Username)
+			log.Debug.Printf("Stop checking user %s input idle time", user.Username)
 			return
 		case checkStatus = <-checkChan:
 			if !checkStatus {
@@ -103,7 +103,7 @@ func (h *InteractiveHandler) displayHelp() {
 }
 
 func (h *InteractiveHandler) WatchWinSizeChange(winChan <-chan ssh.Window) {
-	defer log.Info.Printf("Request %s: Windows change watch close", h.sess.Uuid[:8])
+	defer log.Debug.Printf("Request %s: Windows change watch close", h.sess.Uuid[:8])
 	for {
 		select {
 		case <-h.sess.Sess.Context().Done():

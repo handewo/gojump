@@ -48,8 +48,8 @@ func (s *server) GetTerminalConfig() model.TerminalConfig {
 func Run(cfg string) {
 	config.Initial(cfg)
 
-	log.SetLogLevel(config.GlobalConfig.LogLevel)
 	log.SetLogFile(config.GlobalConfig.LogFile)
+	log.SetLogLevel(config.GlobalConfig.LogLevel)
 
 	gracefulStop := make(chan os.Signal, 1)
 	signal.Notify(gracefulStop, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)

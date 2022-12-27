@@ -32,7 +32,6 @@ func (h *InteractiveHandler) AdminSystem() {
 			displayAdminHelp(h.sess)
 			continue
 		case 'q':
-			log.Info.Printf("admin %s enter %s to exit", h.user.Username, line)
 			return
 		}
 		words := strings.Split(line, " ")
@@ -58,7 +57,6 @@ func (h *InteractiveHandler) AdminSystem() {
 			displayAdminHelp(h.sess)
 			continue
 		case "exit", "quit":
-			log.Info.Printf("admin %s enter %s to exit", h.user.Username, line)
 			return
 		}
 	}

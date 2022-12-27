@@ -49,7 +49,7 @@ func (u *UserSSHClient) recycleClients() {
 		for i := range needRemovedClients {
 			delete(u.data, needRemovedClients[i])
 		}
-		log.Info.Printf("Remove %d clients (%s) remain %d",
+		log.Debug.Printf("Remove %d clients (%s) remain %d",
 			len(needRemovedClients), u.name, len(u.data))
 	}
 }
@@ -104,7 +104,7 @@ func (s *SSHManager) run() {
 					for i := range needRemovedClients {
 						delete(data, needRemovedClients[i])
 					}
-					log.Info.Printf("Remove %d user clients remain %d",
+					log.Debug.Printf("Remove %d user clients remain %d",
 						len(needRemovedClients), len(data))
 				}
 			}
@@ -140,7 +140,7 @@ func (s *SSHManager) run() {
 				data[reqClient.reqId] = userClient
 			}
 			userClient.AddClient(reqClient.SSHClient)
-			log.Info.Printf("Store new client(%s) remain %d", reqClient.String(), userClient.Count())
+			log.Debug.Printf("Store new client(%s) remain %d", reqClient.String(), userClient.Count())
 		}
 
 		latestVisited = time.Now()
@@ -361,7 +361,7 @@ func (s *SSHClient) ReleaseSession(sess *gossh.Session) {
 	s.Mutex.Lock()
 	defer s.Mutex.Unlock()
 	delete(s.traceSessionMap, sess)
-	log.Info.Printf("SSHClient(%s) release one session remain %d", s, len(s.traceSessionMap))
+	log.Debug.Printf("SSHClient(%s) release one session remain %d", s, len(s.traceSessionMap))
 }
 
 func createSSHConfig() gossh.Config {

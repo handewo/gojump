@@ -34,7 +34,7 @@ func (s *Server) validateLoginConfirm(srv *auth.LoginConfirmService, userConn Us
 		for {
 			line, err := term.ReadLine()
 			if err != nil {
-				log.Error.Printf("Wait confirm user readLine exit: %s", err.Error())
+				log.Warning.Printf("Wait confirm user readLine exit: %s", err.Error())
 				return
 			}
 			switch line {

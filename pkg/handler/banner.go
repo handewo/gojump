@@ -65,8 +65,8 @@ func displayAdminHelp(sess io.ReadWriter) {
 		{id: 1, instruct: "otp USERNAME", helpText: "generate otp for user"},
 		{id: 2, instruct: "list TABLE", helpText: "list [USERLOG, TICKET]"},
 		{id: 3, instruct: "ticket", helpText: "list pending tickets"},
-		{id: 4, instruct: "approve TICKETID", helpText: "approve the ticket"},
-		{id: 5, instruct: "reject TICKETID", helpText: "reject the ticket"},
+		{id: 4, instruct: "approve TICKET_ID", helpText: "approve the ticket"},
+		{id: 5, instruct: "reject TICKET_ID", helpText: "reject the ticket"},
 		{id: 6, instruct: "h", helpText: "print help"},
 		{id: 7, instruct: "q", helpText: "exit"},
 	}

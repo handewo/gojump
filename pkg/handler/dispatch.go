@@ -64,13 +64,11 @@ func (h *InteractiveHandler) Dispatch() {
 				h.refreshAssetsAndNodesData()
 				continue
 			case "q":
-				log.Info.Printf("user %s enter %s to exit", h.user.Username, line)
 				return
 			}
 		default:
 			switch {
 			case line == "exit", line == "quit":
-				log.Info.Printf("user %s enter %s to exit", h.user.Username, line)
 				return
 			case strings.Index(line, "/") == 0:
 				if strings.Index(line[1:], "/") == 0 {

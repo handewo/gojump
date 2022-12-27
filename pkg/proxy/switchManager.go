@@ -58,10 +58,13 @@ func (s *SwitchSession) Bridge(userConn UserConnection, srvConn srvconn.ServerCo
 	srvChan := make(chan []byte, 1)
 	userChan := make(chan []byte, 1)
 
+	replayRecorder := s.p.GetReplayRecorder()
+
 	defer func() {
 		close(done)
 		_ = userConn.Close()
 		_ = srvConn.Close()
+		replayRecorder.End()
 	}()
 
 	winCh := userConn.WinCh()
@@ -98,7 +101,7 @@ func (s *SwitchSession) Bridge(userConn UserConnection, srvConn srvconn.ServerCo
 				break
 			}
 		}
-		log.Info.Printf("Session[%s] srv read end", s.ID[:8])
+		log.Debug.Printf("Session[%s] srv read end", s.ID[:8])
 		exitSignal <- struct{}{}
 		close(srvChan)
 	}()
@@ -115,11 +118,11 @@ func (s *SwitchSession) Bridge(userConn UserConnection, srvConn srvconn.ServerCo
 				}
 			}
 			if err != nil {
-				log.Error.Printf("Session[%s] user read err: %s", s.ID[:8], err)
+				log.Warning.Printf("Session[%s] user read err: %s", s.ID[:8], err)
 				break
 			}
 		}
-		log.Info.Printf("Session[%s] user read end", s.ID[:8])
+		log.Debug.Printf("Session[%s] user read end", s.ID[:8])
 		exitSignal <- struct{}{}
 	}()
 
@@ -160,6 +163,7 @@ func (s *SwitchSession) Bridge(userConn UserConnection, srvConn srvconn.ServerCo
 			if !ok {
 				return
 			}
+			replayRecorder.Record(p)
 			if _, err := userConn.Write(p); err != nil {
 				log.Error.Printf("Session[%s] userConn write err: %s", s.ID[:8], err)
 			}
@@ -181,7 +185,7 @@ func (s *SwitchSession) Bridge(userConn UserConnection, srvConn srvconn.ServerCo
 			continue
 		case <-userConn.Context().Done():
 			log.Info.Printf("Session[%s]: user conn context done", s.ID[:8])
-			return nil
+			return
 		case <-exitSignal:
 			log.Debug.Printf("Session[%s] end by exit signal", s.ID[:8])
 			return

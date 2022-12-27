@@ -1,6 +1,7 @@
 package common
 
 import (
+	"compress/gzip"
 	"crypto/ed25519"
 	"crypto/md5"
 	"crypto/rand"
@@ -10,7 +11,9 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/handewo/gojump/pkg/log"
 	"golang.org/x/crypto/bcrypt"
@@ -261,4 +264,48 @@ func HashPassword(password string) (string, error) {
 		GenerateFromPassword(passwordBytes, bcrypt.MinCost)
 
 	return string(hashedPasswordBytes), err
+}
+
+func FileExists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
+
+func EnsureDirExist(name string) error {
+	if !FileExists(name) {
+		return os.MkdirAll(name, os.ModePerm)
+	}
+	return nil
+}
+
+func GzipCompressFile(srcPath, dstPath string) error {
+	sf, err := os.Open(srcPath)
+	if err != nil {
+		return err
+	}
+	defer sf.Close()
+	sfInfo, err := sf.Stat()
+	if err != nil {
+		return err
+	}
+	df, err := os.Create(dstPath)
+	if err != nil {
+		return err
+	}
+	defer df.Close()
+	writer := gzip.NewWriter(df)
+	writer.Name = sfInfo.Name()
+	writer.ModTime = time.Now().UTC()
+	_, err = io.Copy(writer, sf)
+	if err != nil {
+		return err
+	}
+	if err = writer.Close(); err != nil {
+		return err
+	}
+	return nil
 }

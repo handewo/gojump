@@ -55,11 +55,20 @@ func SetLogFile(f string) {
 
 func SetLogLevel(l string) {
 	switch l {
-	case "DEBUG":
 	case "INFO":
+		Debug.SetOutput(io.Discard)
 	case "WARNING":
+		Debug.SetOutput(io.Discard)
+		Info.SetOutput(io.Discard)
 	case "ERROR":
+		Debug.SetOutput(io.Discard)
+		Info.SetOutput(io.Discard)
+		Warning.SetOutput(io.Discard)
 	case "FATAL":
+		Debug.SetOutput(io.Discard)
+		Info.SetOutput(io.Discard)
+		Warning.SetOutput(io.Discard)
+		Error.SetOutput(io.Discard)
 	}
 }
 

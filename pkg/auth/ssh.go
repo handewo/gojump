@@ -35,7 +35,6 @@ func SSHPasswordAndPublicKeyAuth(c *core.Core) SSHAuthFunc {
 		}
 		userAuthClient.SetOption(model.UserClientPassword(password),
 			model.UserClientPublicKey(publicKey), model.UserClientRemoteAddr(remoteAddr))
-		log.Info.Printf("SSH conn[%s] authenticating user %s %s", ctx.SessionID()[:10], username, authMethod)
 		user, res := userAuthClient.Authenticate(ctx)
 		log.Info.Printf("SSH conn[%s] %s for %s from %s", ctx.SessionID()[:10],
 			authMethod, username, remoteAddr)

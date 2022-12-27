@@ -50,7 +50,7 @@ func (w *WrapperSession) readLoop() {
 	_ = w.outReader.Close()
 	w.mux.RUnlock()
 	close(w.closed)
-	log.Info.Printf("Request %s: Read loop break", w.Uuid[:8])
+	log.Debug.Printf("Request %s: Read loop break", w.Uuid[:8])
 }
 
 func (w *WrapperSession) Read(p []byte) (int, error) {

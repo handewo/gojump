@@ -11,18 +11,14 @@ type Config struct {
 	SSHTimeout int    `mapstructure:"SSH_TIMEOUT"`
 	LogFile    string `mapstructure:"LOG_FILE"`
 
-	LogLevel string `mapstructure:"LOG_LEVEL"`
-	DbFile   string `mapstructure:"DB_FILE"`
+	LogLevel         string `mapstructure:"LOG_LEVEL"`
+	DbFile           string `mapstructure:"DB_FILE"`
+	ReplayFolderPath string ` mapstructure:"REPLAY_PATH"`
 
 	ClientAliveInterval int  `mapstructure:"CLIENT_ALIVE_INTERVAL"`
 	RetryAliveCountMax  int  `mapstructure:"RETRY_ALIVE_COUNT_MAX"`
 	ReuseConnection     bool `mapstructure:"REUSE_CONNECTION"`
-
-	RootPath          string
-	DataFolderPath    string
-	KeyFolderPath     string
-	AccessKeyFilePath string
-	CertsFolderPath   string
+	DisableRecorder     bool `mapstructure:"DISABLE_RECORDER"`
 }
 
 var GlobalConfig *Config
@@ -51,11 +47,12 @@ func Initial(cfgFile string) {
 
 func newDefaultConfig() *Config {
 	return &Config{
-		BindHost:   "127.0.0.1",
-		SSHPort:    "22222",
-		SSHTimeout: 180,
-		LogLevel:   "INFO",
-		LogFile:    "gojump.log",
-		DbFile:     "gojumpdb",
+		BindHost:         "127.0.0.1",
+		SSHPort:          "22222",
+		SSHTimeout:       30,
+		LogLevel:         "INFO",
+		LogFile:          "gojump.log",
+		DbFile:           "gojumpdb",
+		ReplayFolderPath: "gojumpreplay",
 	}
 }

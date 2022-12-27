@@ -1,6 +1,7 @@
 buildPro.sh
 gojumpdb
 gojump
+gojumpreplay
 gojump.log
 initDB
 initProDB
