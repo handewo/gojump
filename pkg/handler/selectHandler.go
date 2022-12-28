@@ -259,7 +259,7 @@ func (u *UserSelectHandler) retrieveLocal(searches ...string) []map[string]inter
 	default:
 		// TypeAsset
 		u.SetSelectType(TypeAsset)
-		log.Info.Print("Retrieve default local data type: Asset")
+		log.Debug.Print("Retrieve default local data type: Asset")
 		return u.searchLocalAsset(searches...)
 	}
 }

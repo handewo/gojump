@@ -156,7 +156,7 @@ func (s *SwitchSession) Bridge(userConn UserConnection, srvConn srvconn.ServerCo
 				return
 			}
 			_ = srvConn.SetWinSize(win.Width, win.Height)
-			log.Info.Printf("Session[%s] Window server change: %d*%d",
+			log.Debug.Printf("Session[%s] Window server change: %d*%d",
 				s.ID[:8], win.Width, win.Height)
 			// 经过parse处理的server数据，发给user
 		case p, ok := <-srvChan:

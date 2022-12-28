@@ -6,10 +6,11 @@ import (
 )
 
 type Config struct {
-	BindHost   string `mapstructure:"BIND_HOST"`
-	SSHPort    string `mapstructure:"SSHD_PORT"`
-	SSHTimeout int    `mapstructure:"SSH_TIMEOUT"`
-	LogFile    string `mapstructure:"LOG_FILE"`
+	BindHost    string `mapstructure:"BIND_HOST"`
+	SSHPort     string `mapstructure:"SSHD_PORT"`
+	SSHTimeout  int    `mapstructure:"SSH_TIMEOUT"`
+	LogFile     string `mapstructure:"LOG_FILE"`
+	OtpDuration int64  `mapstructure:"OTP_DURATION"`
 
 	LogLevel         string `mapstructure:"LOG_LEVEL"`
 	DbFile           string `mapstructure:"DB_FILE"`
@@ -54,5 +55,6 @@ func newDefaultConfig() *Config {
 		LogFile:          "gojump.log",
 		DbFile:           "gojumpdb",
 		ReplayFolderPath: "gojumpreplay",
+		OtpDuration:      120,
 	}
 }

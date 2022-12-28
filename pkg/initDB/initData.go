@@ -17,7 +17,7 @@ func InitData(db *genji.DB) {
 		HeaderTitle:        "",
 		PasswordAuth:       true,
 		PublicKeyAuth:      true,
-		MaxIdleTime:        60,
+		MaxIdleTime:        90,
 		HostKey:            key,
 		EnableSessionShare: false,
 	}

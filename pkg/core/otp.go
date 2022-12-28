@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/handewo/gojump/pkg/config"
 	"github.com/handewo/gojump/pkg/log"
 )
 
@@ -20,11 +21,13 @@ func (c *Core) GenOTPassword(name string) string {
 	c.otpassword[name] = pass
 	c.otpLock.Unlock()
 
-	go c.clearOTPassword(name, 90)
+	after := config.GlobalConfig.OtpDuration
+	go c.clearOTPassword(name, after)
 	return pass
 }
 
 func (c *Core) clearOTPassword(name string, after int64) {
+	log.Debug.Printf("OTP for %s will be cleared after %d seconds", name, after)
 	time.Sleep(time.Duration(after) * time.Second)
 	c.otpLock.Lock()
 	defer c.otpLock.Unlock()
