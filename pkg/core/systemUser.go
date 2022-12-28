@@ -1,6 +1,8 @@
 package core
 
 import (
+	"fmt"
+
 	"github.com/genjidb/genji"
 	"github.com/genjidb/genji/document"
 	"github.com/genjidb/genji/types"
@@ -32,4 +34,26 @@ func getSystemUser(db *genji.DB, ids []string) ([]model.SystemUser, error) {
 		return err
 	})
 	return sysUsers, err
+}
+
+func (c *Core) QueryAllSystemUser() ([]string, error) {
+	sys, err := queryStructsFromDb[model.SystemUser](c.db, "SELECT * FROM SYSTEMUSER")
+	if err != nil {
+		return nil, err
+	}
+	res := make([]string, 0, 10)
+	for _, v := range sys {
+		pass := ""
+		key := ""
+		if v.Password != "" {
+			pass = "********"
+		}
+		if v.PrivateKey != "" {
+			key = "********"
+		}
+		s := fmt.Sprintf("%4s|%10s|%8d|%8s|%8s|%11s|%s", v.ID, v.Username,
+			v.Priority, v.Protocol, pass, key, v.Comment)
+		res = append(res, s)
+	}
+	return res, nil
 }

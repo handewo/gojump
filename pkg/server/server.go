@@ -57,8 +57,8 @@ func Run(cfg string) {
 	srv := NewServer(core)
 	srv.initSSHServer()
 	go srv.Serve()
+	defer srv.Shutdown()
 	<-gracefulStop
-	srv.Shutdown()
 }
 
 func NewServer(c *core.Core) *server {
@@ -81,15 +81,19 @@ func (s *server) Serve() {
 		log.Fatal.Print(err)
 	}
 	proxyListener := &proxyproto.Listener{Listener: ln}
-	log.Fatal.Print(s.srv.Serve(proxyListener))
+	if err := s.srv.Serve(proxyListener); err != nil {
+		log.Fatal.Print(err)
+	}
 }
 
 func (s *server) Shutdown() {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer log.Close()
+	defer s.core.Close()
 	defer cancelFunc()
-	s.core.Close()
-	log.Fatal.Print(s.srv.Shutdown(ctx))
-	log.Close()
+	if err := s.srv.Shutdown(ctx); err != nil {
+		log.Fatal.Print(err)
+	}
 }
 
 func (s *server) initSSHServer() {

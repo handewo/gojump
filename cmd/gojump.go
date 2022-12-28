@@ -3,12 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 	"syscall"
 
+	"github.com/handewo/gojump/pkg/log"
 	"github.com/handewo/gojump/pkg/server"
 	"github.com/sevlyar/go-daemon"
 )
@@ -21,7 +20,7 @@ func runDaemon() {
 	}
 	child, err := ctx.Reborn()
 	if err != nil {
-		log.Fatalf("run failed: %v", err)
+		log.Fatal.Fatalf("run failed: %v", err)
 	}
 	if child != nil {
 		return
@@ -56,15 +55,15 @@ func main() {
 	}
 
 	if stopFlag {
-		pid, err := ioutil.ReadFile(pidPath)
+		pid, err := os.ReadFile(pidPath)
 		if err != nil {
-			log.Fatal("Pid file not exist")
+			log.Fatal.Fatal("Pid file not exist")
 			return
 		}
 		pidInt, _ := strconv.Atoi(string(pid))
 		err = syscall.Kill(pidInt, syscall.SIGTERM)
 		if err != nil {
-			log.Fatalf("Stop failed: %v", err)
+			log.Error.Printf("Stop failed: %v", err)
 		} else {
 			_ = os.Remove(pidPath)
 		}

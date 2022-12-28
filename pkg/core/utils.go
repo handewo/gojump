@@ -10,6 +10,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type Model interface {
+	model.Asset | model.Node | model.User | model.SystemUser | model.AssetUserInfo
+}
+
 func queryOneFieldFromDb(db *genji.DB, f interface{}, sql string, cond ...interface{}) error {
 	res, err := db.Query(sql, cond...)
 	if err != nil {
@@ -34,6 +38,25 @@ func queryStructFromDb(db *genji.DB, st interface{}, sql string, cond ...interfa
 		return err
 	})
 	return err
+}
+
+func queryStructsFromDb[M Model](db *genji.DB, sql string, cond ...interface{}) ([]M, error) {
+	res, err := db.Query(sql, cond...)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Close()
+	models := make([]M, 0, 10)
+	err = res.Iterate(func(d types.Document) error {
+		var m M
+		err = document.StructScan(d, &m)
+		if err != nil {
+			return err
+		}
+		models = append(models, m)
+		return nil
+	})
+	return models, err
 }
 
 func InsertData(db *genji.DB, sql string, data ...interface{}) error {

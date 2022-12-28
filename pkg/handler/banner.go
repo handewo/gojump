@@ -63,7 +63,7 @@ func displayAdminHelp(sess io.ReadWriter) {
 	title := common.WrapperTitle("GOJump Admin")
 	menu := Menu{
 		{id: 1, instruct: "otp USERNAME", helpText: "generate otp for user"},
-		{id: 2, instruct: "list TABLE", helpText: "list [USERLOG, TICKET]"},
+		{id: 2, instruct: "list TABLE", helpText: "list [USERLOG, TICKET, USER, SYSUSER, ASSET, NDOE, ASSETUSER]"},
 		{id: 3, instruct: "ticket", helpText: "list pending tickets"},
 		{id: 4, instruct: "approve TICKET_ID", helpText: "approve the ticket"},
 		{id: 5, instruct: "reject TICKET_ID", helpText: "reject the ticket"},

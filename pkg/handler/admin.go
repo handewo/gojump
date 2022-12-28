@@ -100,6 +100,41 @@ func (h *InteractiveHandler) listTable(table string) {
 			return
 		}
 		title = "                 Ticket ID                | Application Date  |    User  |   Asset  |  SysUser "
+	case "USER":
+		rows, err = h.core.QueryAllUser()
+		if err != nil {
+			log.Error.Printf("query error from USER, %s", err)
+			return
+		}
+		title = "        ID|    User  |  Role|      Expire At    |OTP Level|Active|      Nodes     |    While list"
+	case "SYSUSER":
+		rows, err = h.core.QueryAllSystemUser()
+		if err != nil {
+			log.Error.Printf("query error from SYSTEMUSER, %s", err)
+			return
+		}
+		title = "        ID|    User  |Priority|Protocol|Password|Private Key|Comment"
+	case "ASSET":
+		rows, err = h.core.QueryAllAsset()
+		if err != nil {
+			log.Error.Printf("query error from ASSET, %s", err)
+			return
+		}
+		title = "        ID|Asset Name| Hostname |                   IP                  |    OS    |Active| Platform |   Protocols   |Comment"
+	case "NODE":
+		rows, err = h.core.QueryAllNode()
+		if err != nil {
+			log.Error.Printf("query error from NODE, %s", err)
+			return
+		}
+		title = "        ID|   Name   |    Key   |      Asset IDs"
+	case "ASSETUSER":
+		rows, err = h.core.QueryAssetUserInfo()
+		if err != nil {
+			log.Error.Printf("query error from ASSETUSERINFO, %s", err)
+			return
+		}
+		title = "        ID|User ID|Asset ID|      Expire At    |Need Confirm|System User IDs"
 	}
 	common.IgnoreErrWriteString(h.sess, title+common.CharNewLine)
 	for i, v := range rows {

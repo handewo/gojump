@@ -68,6 +68,7 @@ func (s *server) SessionHandler(sess ssh.Session) {
 	termConf := s.GetTerminalConfig()
 	if pty, winChan, isPty := sess.Pty(); isPty {
 		interactiveSrv := handler.NewInteractiveHandler(sess, user, s.core, termConf)
+		defer s.core.InteractiveLog(sess.User())
 		log.Debug.Printf("User %s request pty %s", sess.User(), pty.Term)
 		go interactiveSrv.WatchWinSizeChange(winChan)
 		if user.Username == "admin" {

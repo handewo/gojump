@@ -25,13 +25,13 @@ func InsertTestData(db *genji.DB) {
 func insertUser(db *genji.DB) {
 	var err error
 	d := model.User{
-		ID:        "2",
-		Username:  "rick",
-		Role:      "user",
-		ExpiredAt: 0,
-		OTPLevel:  0,
-		IsActive:  true,
-		NodeIDs:   []string{"1", "2", "10", "59"},
+		ID:       "2",
+		Username: "rick",
+		Role:     "user",
+		ExpireAt: 0,
+		OTPLevel: 0,
+		IsActive: true,
+		NodeIDs:  []string{"1", "2", "10", "59"},
 	}
 	pass, _ := common.HashPassword("123456")
 	us := model.UserSecret{
@@ -44,13 +44,27 @@ func insertUser(db *genji.DB) {
 		ID:            "1",
 		Username:      "admin",
 		Role:          "admin",
-		ExpiredAt:     0,
+		ExpireAt:      0,
 		OTPLevel:      0,
 		IsActive:      true,
 		AddrWhiteList: []string{"127.0.0.1"},
 	}
 	aus := model.UserSecret{
 		UserID:         "1",
+		Password:       pass,
+		PrivateKey:     "",
+		AuthorizedKeys: []string{""},
+	}
+	f := model.User{
+		ID:       "3",
+		Username: "jack",
+		Role:     "user",
+		ExpireAt: 1672216237,
+		OTPLevel: 0,
+		IsActive: true,
+	}
+	fs := model.UserSecret{
+		UserID:         "3",
 		Password:       pass,
 		PrivateKey:     "",
 		AuthorizedKeys: []string{""},
@@ -68,6 +82,14 @@ func insertUser(db *genji.DB) {
 		log.Error.Print(err)
 	}
 	err = core.InsertData(db, "INSERT INTO USERSECRET VALUES ?", &aus)
+	if err != nil {
+		log.Error.Print(err)
+	}
+	err = core.InsertData(db, "INSERT INTO USER VALUES ?", &f)
+	if err != nil {
+		log.Error.Print(err)
+	}
+	err = core.InsertData(db, "INSERT INTO USERSECRET VALUES ?", &fs)
 	if err != nil {
 		log.Error.Print(err)
 	}

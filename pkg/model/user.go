@@ -7,7 +7,7 @@ type User struct {
 	ID            string `json:"id"`
 	Username      string `json:"name"`
 	Role          string `json:"role"`
-	ExpiredAt     int64
+	ExpireAt      int64
 	OTPLevel      int  `json:"otp_level"`
 	IsActive      bool `json:"is_active"`
 	NodeIDs       []string

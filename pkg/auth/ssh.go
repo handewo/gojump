@@ -40,6 +40,7 @@ func SSHPasswordAndPublicKeyAuth(c *core.Core) SSHAuthFunc {
 			authMethod, username, remoteAddr)
 		if res {
 			ctx.SetValue(ContextKeyUser, &user)
+			c.AuthenticationLog(username, authMethod, remoteAddr)
 			return
 		}
 		return

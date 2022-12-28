@@ -44,7 +44,12 @@ func NewCore() *Core {
 }
 
 func (c *Core) Close() {
-	c.db.Close()
+	err := c.db.Close()
+	if err != nil {
+		log.Error.Print(err)
+		return
+	}
+	log.Debug.Print("database closed")
 }
 
 func (c *Core) GetTerminalConfig() (conf model.TerminalConfig, err error) {

@@ -110,7 +110,8 @@ func getReviewers(db *genji.DB) ([]string, error) {
 
 func (c *Core) QueryPengdingLoginTicket() ([]string, error) {
 	ticks := make([]string, 0, 5)
-	res, err := c.db.Query("SELECT ticketid,applicationdate,username,assetname,sysusername FROM LOGINTICKET WHERE state = ?",
+	res, err := c.db.Query(`SELECT ticketid,applicationdate,username,assetname,
+	sysusername FROM LOGINTICKET WHERE state = ?`,
 		model.TicketOpen)
 	if err != nil {
 		return nil, err
@@ -153,4 +154,18 @@ func (c *Core) QueryLoginTicket() ([]string, error) {
 		return nil, err
 	}
 	return ticks, err
+}
+
+func (c *Core) AuthenticationLog(username, authMethod, remoteAddr string) {
+	date := time.Now().Format(common.LogFormat)
+	lg := model.UserLog{
+		Datetime: date,
+		Type:     "auth",
+		User:     username,
+		Log:      fmt.Sprintf("authenticate successfully from %s using %s", remoteAddr, authMethod),
+	}
+	err := InsertData(c.db, model.InsertUserLog, &lg)
+	if err != nil {
+		log.Error.Printf("insert authentication log failed, %s", err)
+	}
 }

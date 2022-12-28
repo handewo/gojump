@@ -41,7 +41,7 @@ func (u *UserAuthClient) Authenticate(ctx ssh.Context) (user model.User, res boo
 	}
 
 	t := time.Now().Unix()
-	if user.ExpiredAt != 0 && user.ExpiredAt < t {
+	if user.ExpireAt != 0 && user.ExpireAt < t {
 		log.Info.Printf("user %s has expired", username)
 		return model.User{}, false
 	}
