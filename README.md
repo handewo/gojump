@@ -16,6 +16,14 @@ It's very appropriate for light needs.
 - Login confirm
 - Record replay based on [asciicast v2](https://github.com/asciinema/asciinema/blob/develop/doc/asciicast-v2.md)
 
+## Building from source
+```bash
+git clone https://github.com/handewo/gojump.git
+cd gojump
+chmod u+x build.sh
+# By default, the script will delete and initial gojumpdb
+./build.sh
+```
 ## RoadMap
 - Support more protocal like MySQL, PostgreSQL, Redis, etc.
 - Provide RESTful api for admin manager
