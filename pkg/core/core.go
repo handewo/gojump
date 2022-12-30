@@ -22,7 +22,7 @@ type Core struct {
 
 func NewCore() *Core {
 
-	path := config.GlobalConfig.DbFile
+	path := config.GlobalConfig.DbPath
 	_, err := os.Stat(path)
 	if err != nil {
 		log.Fatal.Fatal(err)

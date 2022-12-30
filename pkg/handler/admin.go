@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
 
 	"github.com/handewo/gojump/pkg/common"
+	"github.com/handewo/gojump/pkg/config"
 	"github.com/handewo/gojump/pkg/log"
 	"github.com/handewo/gojump/pkg/model"
 )
@@ -106,7 +108,7 @@ func (h *InteractiveHandler) listTable(table string) {
 			log.Error.Printf("query error from USER, %s", err)
 			return
 		}
-		title = "        ID|    User  |  Role|      Expire At    |OTP Level|Active|      Nodes     |    While list"
+		title = "        ID|    User  |  Role|      Expire At    |OTP Level|Active|      Nodes     |    White list"
 	case "SYSUSER":
 		rows, err = h.core.QueryAllSystemUser()
 		if err != nil {
@@ -135,6 +137,22 @@ func (h *InteractiveHandler) listTable(table string) {
 			return
 		}
 		title = "        ID|User ID|Asset ID|      Expire At    |Need Confirm|System User IDs"
+	case "CONFIG":
+		cfg, err := json.MarshalIndent(config.GlobalConfig, "", "    ")
+		if err != nil {
+			log.Error.Printf("json marshal error: %s", err)
+			return
+		}
+		tcfg, err := json.MarshalIndent(h.terminalConf, "", "    ")
+		if err != nil {
+			log.Error.Printf("json marshal error: %s", err)
+			return
+		}
+		_, err = io.WriteString(h.sess, string(cfg)+","+string(tcfg)+common.CharNewLine)
+		if err != nil {
+			log.Error.Printf("Send to client error, %s", err)
+			return
+		}
 	}
 	common.IgnoreErrWriteString(h.sess, title+common.CharNewLine)
 	for i, v := range rows {

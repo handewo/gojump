@@ -7,6 +7,6 @@ type TerminalConfig struct {
 	PasswordAuth       bool   `json:"TERMINAL_PASSWORD_AUTH"`
 	PublicKeyAuth      bool   `json:"TERMINAL_PUBLIC_KEY_AUTH"`
 	MaxIdleTime        int    `json:"MAX_IDLE_TIME"`
-	HostKey            string `json:"TERMINAL_HOST_KEY"`
+	HostKey            string `json:"-"`
 	EnableSessionShare bool   `json:"SECURITY_SESSION_SHARE"`
 }
