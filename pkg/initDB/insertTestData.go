@@ -11,9 +11,10 @@ import (
 )
 
 func InsertTestData(db *genji.DB) {
-	insertAssets(db, "elastic", 2, 9)
-	insertAssets(db, "k8s", 10, 58)
-	insertAssets(db, "hadoop", 59, 158)
+	insertAssets(db, "localhost", 1, 2, "127.0.0", false)
+	insertAssets(db, "elastic", 2, 9, "192.168.0", true)
+	insertAssets(db, "k8s", 10, 58, "192.168.1", true)
+	insertAssets(db, "hadoop", 59, 158, "192.168.2", true)
 
 	insertUser(db)
 
@@ -108,7 +109,7 @@ func insertNode(db *genji.DB) {
 	}
 }
 
-func insertAssets(db *genji.DB, prefix string, start int, end int) {
+func insertAssets(db *genji.DB, prefix string, start int, end int, netprefix string, needConfirm bool) {
 	var err error
 	assets := make([]string, 0, end-start+1)
 	for i := start; i < end; i++ {
@@ -116,7 +117,7 @@ func insertAssets(db *genji.DB, prefix string, start int, end int) {
 			ID:        fmt.Sprint(i),
 			Name:      fmt.Sprintf("%s%d", prefix, i),
 			Hostname:  fmt.Sprintf("%s%d", prefix, i),
-			IP:        fmt.Sprintf("192.168.2.%d", i),
+			IP:        fmt.Sprintf("%s.%d", netprefix, i),
 			Os:        "CentOS 7",
 			Comment:   "",
 			Protocols: []string{"ssh/22"},
@@ -129,7 +130,7 @@ func insertAssets(db *genji.DB, prefix string, start int, end int) {
 			AssetID:     fmt.Sprint(i),
 			ExpireAt:    0,
 			SysUserID:   []string{"1", "2"},
-			NeedConfirm: true,
+			NeedConfirm: needConfirm,
 		}
 		err = core.InsertData(db, "INSERT INTO ASSET VALUES ?", &d)
 		if err != nil {

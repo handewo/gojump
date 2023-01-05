@@ -111,11 +111,7 @@ func (s *SwitchSession) Bridge(userConn UserConnection, srvConn srvconn.ServerCo
 			buf := make([]byte, 1024)
 			nr, err := userConn.Read(buf)
 			if nr > 0 {
-				select {
-				case userChan <- buf[:nr]:
-				case <-done:
-					break
-				}
+				userChan <- buf[:nr]
 			}
 			if err != nil {
 				log.Warning.Printf("Session[%s] user read err: %s", s.ID[:8], err)
