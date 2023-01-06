@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -138,21 +139,7 @@ func (h *InteractiveHandler) listTable(table string) {
 		}
 		title = "        ID|User ID|Asset ID|      Expire At    |Need Confirm|System User IDs"
 	case "CONFIG":
-		cfg, err := json.MarshalIndent(config.GlobalConfig, "", "    ")
-		if err != nil {
-			log.Error.Printf("json marshal error: %s", err)
-			return
-		}
-		tcfg, err := json.MarshalIndent(h.terminalConf, "", "    ")
-		if err != nil {
-			log.Error.Printf("json marshal error: %s", err)
-			return
-		}
-		_, err = io.WriteString(h.sess, string(cfg)+","+string(tcfg)+common.CharNewLine)
-		if err != nil {
-			log.Error.Printf("Send to client error, %s", err)
-			return
-		}
+		h.showConfig()
 	}
 	common.IgnoreErrWriteString(h.sess, title+common.CharNewLine)
 	for i, v := range rows {
@@ -162,5 +149,25 @@ func (h *InteractiveHandler) listTable(table string) {
 			log.Error.Printf("Send to client error, %s", err)
 			return
 		}
+	}
+}
+
+func (h *InteractiveHandler) showConfig() {
+	cfg, err := json.MarshalIndent(config.GlobalConfig, "", "    ")
+	if err != nil {
+		log.Error.Printf("json marshal error: %s", err)
+		return
+	}
+	tcfg, err := json.MarshalIndent(h.terminalConf, "", "    ")
+	if err != nil {
+		log.Error.Printf("json marshal error: %s", err)
+		return
+	}
+	cfg = bytes.Replace(cfg, []byte{'\n'}, []byte{'\r', '\n'}, -1)
+	tcfg = bytes.Replace(tcfg, []byte{'\n'}, []byte{'\r', '\n'}, -1)
+	_, err = io.WriteString(h.sess, string(cfg)+","+string(tcfg)+common.CharNewLine)
+	if err != nil {
+		log.Error.Printf("Send to client error, %s", err)
+		return
 	}
 }
