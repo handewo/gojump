@@ -6,20 +6,27 @@ import (
 )
 
 type Config struct {
-	BindHost    string `mapstructure:"BIND_HOST" json:"BIND_HOST"`
-	SSHPort     string `mapstructure:"SSHD_PORT" json:"SSHD_PORT"`
-	SSHTimeout  int    `mapstructure:"SSH_TIMEOUT" json:"SSH_TIMEOUT"`
-	LogFile     string `mapstructure:"LOG_FILE" json:"LOG_FILE"`
-	OtpDuration int64  `mapstructure:"OTP_DURATION" json:"OTP_DURATION"`
+	BindHost string `mapstructure:"BIND_HOST" json:"BIND_HOST"`
+	SSHPort  string `mapstructure:"SSHD_PORT" json:"SSHD_PORT"`
 
+	//Second
+	SSHTimeout int `mapstructure:"SSH_TIMEOUT" json:"SSH_TIMEOUT"`
+	//Second
+	ClientAliveInterval int `mapstructure:"CLIENT_ALIVE_INTERVAL" json:"CLIENT_ALIVE_INTERVAL"`
+	//Minute
+	LoginBlockTime int64 `mapstructure:"LOGIN_BLOCK_TIME" json:"LOGIN_BLOCK_TIME"`
+	//Second
+	OtpDuration int64 `mapstructure:"OTP_DURATION" json:"OTP_DURATION"`
+
+	LogFile          string `mapstructure:"LOG_FILE" json:"LOG_FILE"`
 	LogLevel         string `mapstructure:"LOG_LEVEL" json:"LOG_LEVEL"`
 	DbPath           string `mapstructure:"DB_PATH" json:"DB_PATH"`
 	ReplayFolderPath string ` mapstructure:"REPLAY_PATH" json:"REPLAY_PATH"`
 
-	ClientAliveInterval int  `mapstructure:"CLIENT_ALIVE_INTERVAL" json:"CLIENT_ALIVE_INTERVAL"`
-	RetryAliveCountMax  int  `mapstructure:"RETRY_ALIVE_COUNT_MAX" json:"RETRY_ALIVE_COUNT_MAX"`
-	ReuseConnection     bool `mapstructure:"REUSE_CONNECTION" json:"REUSE_CONNECTION"`
-	DisableRecorder     bool `mapstructure:"DISABLE_RECORDER" json:"DISABLE_RECORDER"`
+	MaxTryLogin        uint64 `mapstructure:"MAX_TRY_LOGIN" json:"MAX_TRY_LOGIN"`
+	RetryAliveCountMax int    `mapstructure:"RETRY_ALIVE_COUNT_MAX" json:"RETRY_ALIVE_COUNT_MAX"`
+	ReuseConnection    bool   `mapstructure:"REUSE_CONNECTION" json:"REUSE_CONNECTION"`
+	DisableRecorder    bool   `mapstructure:"DISABLE_RECORDER" json:"DISABLE_RECORDER"`
 }
 
 var GlobalConfig *Config
@@ -56,5 +63,7 @@ func newDefaultConfig() *Config {
 		DbPath:           "gojumpdb",
 		ReplayFolderPath: "gojumpreplay",
 		OtpDuration:      120,
+		MaxTryLogin:      15,
+		LoginBlockTime:   5,
 	}
 }

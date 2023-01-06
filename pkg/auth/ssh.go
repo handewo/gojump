@@ -17,9 +17,8 @@ const (
 type SSHAuthFunc func(ctx ssh.Context, password, publicKey string) bool
 
 func SSHPasswordAndPublicKeyAuth(c *core.Core) SSHAuthFunc {
-	return func(ctx ssh.Context, password, publicKey string) (res bool) {
+	return func(ctx ssh.Context, password, publicKey string) bool {
 		remoteAddr, _, _ := net.SplitHostPort(ctx.RemoteAddr().String())
-		res = false
 		username := ctx.User()
 		authMethod := "publickey"
 		if password != "" {
@@ -36,13 +35,19 @@ func SSHPasswordAndPublicKeyAuth(c *core.Core) SSHAuthFunc {
 		userAuthClient.SetOption(model.UserClientPassword(password),
 			model.UserClientPublicKey(publicKey), model.UserClientRemoteAddr(remoteAddr))
 		user, res := userAuthClient.Authenticate(ctx)
-		log.Info.Printf("SSH conn[%s] %s for %s from %s", ctx.SessionID()[:10],
-			authMethod, username, remoteAddr)
-		if res {
+		switch res {
+		case AuthSuccess:
 			ctx.SetValue(ContextKeyUser, &user)
 			c.AuthenticationLog(username, authMethod, remoteAddr)
-			return
+			log.Info.Printf("SSH conn[%s] %s for %s from %s", ctx.SessionID()[:10],
+				authMethod, username, remoteAddr)
+			return true
+		case AuthFailed:
+			log.Info.Printf("SSH conn[%s] %s for %s from %s", ctx.SessionID()[:10],
+				authMethod, username, remoteAddr)
+			c.LimitTryLogin(username)
+		case AuthBlock:
 		}
-		return
+		return false
 	}
 }

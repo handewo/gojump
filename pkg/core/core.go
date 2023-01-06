@@ -13,11 +13,13 @@ import (
 )
 
 type Core struct {
-	db         *genji.DB
-	sessLock   sync.RWMutex
-	session    map[string]model.Session
-	otpLock    sync.Mutex
-	otpassword map[string]string
+	db            *genji.DB
+	sessLock      sync.RWMutex
+	session       map[string]model.Session
+	otpLock       sync.Mutex
+	otpassword    map[string]string
+	loginLock     sync.RWMutex
+	tryLoginCount map[string]uint64
 }
 
 func NewCore() *Core {
@@ -35,10 +37,12 @@ func NewCore() *Core {
 
 	session := make(map[string]model.Session, 100)
 	otpass := make(map[string]string, 4)
+	tryLoginCnt := make(map[string]uint64, 10)
 	return &Core{
-		db:         db,
-		session:    session,
-		otpassword: otpass,
+		db:            db,
+		session:       session,
+		otpassword:    otpass,
+		tryLoginCount: tryLoginCnt,
 	}
 
 }

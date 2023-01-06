@@ -8,6 +8,7 @@ import (
 	"github.com/genjidb/genji/document"
 	"github.com/genjidb/genji/types"
 	"github.com/handewo/gojump/pkg/common"
+	"github.com/handewo/gojump/pkg/config"
 	"github.com/handewo/gojump/pkg/log"
 	"github.com/handewo/gojump/pkg/model"
 	uuid "github.com/satori/go.uuid"
@@ -168,4 +169,30 @@ func (c *Core) AuthenticationLog(username, authMethod, remoteAddr string) {
 	if err != nil {
 		log.Error.Printf("insert authentication log failed, %s", err)
 	}
+}
+
+func (c *Core) LimitTryLogin(user string) {
+	c.loginLock.Lock()
+	count, ok := c.tryLoginCount[user]
+	c.tryLoginCount[user] = count + 1
+	c.loginLock.Unlock()
+	log.Debug.Printf("%s has tried login %d times", user, count+1)
+	if !ok {
+		go func() {
+			blockTime := time.Duration(config.GlobalConfig.LoginBlockTime) * time.Minute
+			timer := time.NewTimer(blockTime)
+			<-timer.C
+			c.loginLock.Lock()
+			delete(c.tryLoginCount, user)
+			c.loginLock.Unlock()
+			log.Info.Printf("%s login limit is reset", user)
+		}()
+	}
+}
+
+func (c *Core) UserIsBlocked(user string) bool {
+	c.loginLock.RLock()
+	count := c.tryLoginCount[user]
+	c.loginLock.RUnlock()
+	return count >= config.GlobalConfig.MaxTryLogin
 }
