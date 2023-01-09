@@ -37,7 +37,7 @@ func init() {
 		log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-func SetLogFile(f string) {
+func SetLogFile(f string, fileOnly bool) {
 	of, err := os.OpenFile(f,
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
@@ -46,6 +46,10 @@ func SetLogFile(f string) {
 	LogFile = of
 	ioo := io.MultiWriter(os.Stdout, of)
 	ioe := io.MultiWriter(os.Stderr, of)
+	if fileOnly {
+		ioo = of
+		ioe = of
+	}
 	Debug.SetOutput(ioo)
 	Info.SetOutput(ioo)
 	Warning.SetOutput(ioe)

@@ -45,10 +45,10 @@ func (s *server) GetTerminalConfig() model.TerminalConfig {
 	return s.terminalConf.Load().(model.TerminalConfig)
 }
 
-func Run(cfg string) {
+func Run(cfg string, isDaemon bool) {
 	config.Initial(cfg)
 
-	log.SetLogFile(config.GlobalConfig.LogFile)
+	log.SetLogFile(config.GlobalConfig.LogFile, isDaemon)
 	log.SetLogLevel(config.GlobalConfig.LogLevel)
 
 	gracefulStop := make(chan os.Signal, 1)

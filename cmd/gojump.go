@@ -26,7 +26,7 @@ func runDaemon() {
 		return
 	}
 	defer ctx.Release()
-	server.Run(configPath)
+	server.Run(configPath, true)
 }
 
 var (
@@ -73,6 +73,6 @@ func main() {
 	if daemonFlag {
 		runDaemon()
 	} else {
-		server.Run(configPath)
+		server.Run(configPath, false)
 	}
 }
