@@ -141,6 +141,13 @@ func (s *Server) Proxy() {
 			_ = s.cacheSSHConnection.Close()
 		}
 	}()
+	if s.CheckPermissionExpired(time.Now()) {
+		log.Info.Printf("Conn[%s]: %s has expired to login to %s", s.UserConn.ID()[:8], s.connOpts.user,
+			s.connOpts.asset.Name)
+		common.IgnoreErrWriteString(s.UserConn, "Your permission to login to this asset has expired")
+		common.IgnoreErrWriteString(s.UserConn, common.CharNewLine)
+		return
+	}
 	if !s.checkLoginConfirm() {
 		log.Info.Printf("Conn[%s]: check login confirm failed", s.UserConn.ID()[:8])
 		return

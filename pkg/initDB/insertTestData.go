@@ -5,7 +5,6 @@ import (
 
 	"github.com/genjidb/genji"
 	"github.com/handewo/gojump/pkg/common"
-	"github.com/handewo/gojump/pkg/core"
 	"github.com/handewo/gojump/pkg/log"
 	"github.com/handewo/gojump/pkg/model"
 )
@@ -59,7 +58,7 @@ func insertUser(db *genji.DB) {
 	f := model.User{
 		ID:       "3",
 		Username: "jack",
-		Role:     "user",
+		Role:     "admin",
 		ExpireAt: 1672216237,
 		OTPLevel: 0,
 		IsActive: true,
@@ -70,27 +69,27 @@ func insertUser(db *genji.DB) {
 		PrivateKey:     "",
 		AuthorizedKeys: []string{""},
 	}
-	err = core.InsertData(db, "INSERT INTO USER VALUES ?", &d)
+	err = InsertData(db, "INSERT INTO USER VALUES ?", &d)
 	if err != nil {
 		log.Error.Print(err)
 	}
-	err = core.InsertData(db, "INSERT INTO USERSECRET VALUES ?", &us)
+	err = InsertData(db, "INSERT INTO USERSECRET VALUES ?", &us)
 	if err != nil {
 		log.Error.Print(err)
 	}
-	err = core.InsertData(db, "INSERT INTO USER VALUES ?", &a)
+	err = InsertData(db, "INSERT INTO USER VALUES ?", &a)
 	if err != nil {
 		log.Error.Print(err)
 	}
-	err = core.InsertData(db, "INSERT INTO USERSECRET VALUES ?", &aus)
+	err = InsertData(db, "INSERT INTO USERSECRET VALUES ?", &aus)
 	if err != nil {
 		log.Error.Print(err)
 	}
-	err = core.InsertData(db, "INSERT INTO USER VALUES ?", &f)
+	err = InsertData(db, "INSERT INTO USER VALUES ?", &f)
 	if err != nil {
 		log.Error.Print(err)
 	}
-	err = core.InsertData(db, "INSERT INTO USERSECRET VALUES ?", &fs)
+	err = InsertData(db, "INSERT INTO USERSECRET VALUES ?", &fs)
 	if err != nil {
 		log.Error.Print(err)
 	}
@@ -103,7 +102,7 @@ func insertNode(db *genji.DB) {
 		Key:  "1",
 		Name: "Default",
 	}
-	err = core.InsertData(db, "INSERT INTO NODE VALUES ?", &n)
+	err = InsertData(db, "INSERT INTO NODE VALUES ?", &n)
 	if err != nil {
 		log.Error.Print(err)
 	}
@@ -132,11 +131,11 @@ func insertAssets(db *genji.DB, prefix string, start int, end int, netprefix str
 			SysUserID:   []string{"1", "2"},
 			NeedConfirm: needConfirm,
 		}
-		err = core.InsertData(db, "INSERT INTO ASSET VALUES ?", &d)
+		err = InsertData(db, "INSERT INTO ASSET VALUES ?", &d)
 		if err != nil {
 			log.Error.Print(err)
 		}
-		err = core.InsertData(db, "INSERT INTO ASSETUSERINFO VALUES ?", &ua)
+		err = InsertData(db, "INSERT INTO ASSETUSERINFO VALUES ?", &ua)
 		if err != nil {
 			log.Error.Print(err)
 		}
@@ -148,7 +147,7 @@ func insertAssets(db *genji.DB, prefix string, start int, end int, netprefix str
 		Name:     prefix,
 		AssetIDs: assets,
 	}
-	err = core.InsertData(db, "INSERT INTO NODE VALUES ?", &n)
+	err = InsertData(db, "INSERT INTO NODE VALUES ?", &n)
 	if err != nil {
 		log.Error.Print(err)
 	}
@@ -174,11 +173,11 @@ func insertSystemUser(db *genji.DB) {
 		Password:   "",
 		PrivateKey: "",
 	}
-	err = core.InsertData(db, "INSERT INTO SYSTEMUSER VALUES ?", &s1)
+	err = InsertData(db, "INSERT INTO SYSTEMUSER VALUES ?", &s1)
 	if err != nil {
 		log.Error.Print(err)
 	}
-	err = core.InsertData(db, "INSERT INTO SYSTEMUSER VALUES ?", &s2)
+	err = InsertData(db, "INSERT INTO SYSTEMUSER VALUES ?", &s2)
 	if err != nil {
 		log.Error.Print(err)
 	}

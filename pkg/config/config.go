@@ -20,8 +20,9 @@ type Config struct {
 
 	LogFile          string `mapstructure:"LOG_FILE" json:"LOG_FILE"`
 	LogLevel         string `mapstructure:"LOG_LEVEL" json:"LOG_LEVEL"`
-	DbPath           string `mapstructure:"DB_PATH" json:"DB_PATH"`
-	ReplayFolderPath string ` mapstructure:"REPLAY_PATH" json:"REPLAY_PATH"`
+	ReplayFolderPath string `mapstructure:"REPLAY_PATH" json:"REPLAY_PATH"`
+	Database         string `mapstructure:"DATABASE" json:"DATABASE"`
+	GenjiDbPath      string `mapstructure:"GENJI_DB_PATH" json:"GENJI_DB_PATH"`
 
 	MaxTryLogin        uint64 `mapstructure:"MAX_TRY_LOGIN" json:"MAX_TRY_LOGIN"`
 	RetryAliveCountMax int    `mapstructure:"RETRY_ALIVE_COUNT_MAX" json:"RETRY_ALIVE_COUNT_MAX"`
@@ -60,8 +61,9 @@ func newDefaultConfig() *Config {
 		SSHTimeout:       30,
 		LogLevel:         "INFO",
 		LogFile:          "gojump.log",
-		DbPath:           "gojumpdb",
 		ReplayFolderPath: "gojumpreplay",
+		Database:         "genji",
+		GenjiDbPath:      "gojumpdb",
 		OtpDuration:      120,
 		MaxTryLogin:      15,
 		LoginBlockTime:   5,

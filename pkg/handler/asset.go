@@ -124,6 +124,7 @@ func (u *UserSelectHandler) displaySortedAssets(searchHeader string) {
 func (u *UserSelectHandler) proxyAsset(asset model.Asset) {
 	systemUsers, err := u.h.core.GetSystemUsersByUserIdAndAssetId(u.user.ID, asset.ID)
 	if err != nil {
+		log.Error.Printf("get system user failed, %s", err)
 		return
 	}
 	selectedSystemUser, ok := u.h.chooseSystemUser(systemUsers)

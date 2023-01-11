@@ -6,5 +6,3 @@ type UserLog struct {
 	User     string
 	Log      string
 }
-
-var InsertUserLog = "INSERT INTO USERLOG VALUES ?"

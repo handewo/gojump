@@ -8,7 +8,7 @@ Since KoKo is just component of [JumpServer](https://github.com/jumpserver/jumps
 
 GoJump is a light JumpServer integrated ssh service and admin manager. You can use to start a bastion server fleetly without complicated configuration.
 
-It's very appropriate for light needs.
+It's very appropriate for light usage.
 
 ## Features
 - Support SSH protocal

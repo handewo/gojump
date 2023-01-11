@@ -1,32 +1,23 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/genjidb/genji"
-	"github.com/genjidb/genji/document"
-	"github.com/genjidb/genji/types"
 	"github.com/handewo/gojump/pkg/common"
 	"github.com/handewo/gojump/pkg/model"
 )
 
-func (c *Core) GetAssetById(assetID string) (asset model.Asset, err error) {
-	res, err := c.db.Query("Select * from ASSET WHERE id = ?", assetID)
-	if err != nil {
-		return asset, err
-	}
-	defer res.Close()
-	err = res.Iterate(func(d types.Document) error {
-		err = document.StructScan(d, &asset)
-		return err
-	})
+func (c *Core) GetAssetById(assetID string) (model.Asset, error) {
+	asset := model.Asset{}
+	err := c.db.QueryStruct(&asset, "SELECT * from ASSET WHERE id = ?", assetID)
 	return asset, err
 }
 
 func (c *Core) GetAllUserPermsAssets(nodeIDs []string) ([]map[string]interface{}, model.NodeList, error) {
-	nas, err := getNodes(c.db, nodeIDs)
+	nas, err := c.getNodes(nodeIDs)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -36,7 +27,7 @@ func (c *Core) GetAllUserPermsAssets(nodeIDs []string) ([]map[string]interface{}
 		aids = append(aids, v.AssetIDs...)
 	}
 
-	ats, err := getAssets(c.db, aids)
+	ats, err := c.getAssets(aids)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -56,33 +47,30 @@ func (c *Core) GetAllUserPermsAssets(nodeIDs []string) ([]map[string]interface{}
 	return res, model.NodeList(nas), err
 }
 
-func getAssets(db *genji.DB, assetIDs []string) ([]model.Asset, error) {
-	res, err := db.Query("Select * from ASSET WHERE id IN ?", assetIDs)
+func (c *Core) getAssets(assetIDs []string) ([]model.Asset, error) {
+	v, err := c.db.QueryStructs(model.AssetType, "SELECT * from ASSET WHERE id IN ?", assetIDs)
 	if err != nil {
 		return nil, err
 	}
-	as := make([]model.Asset, 0, 5)
-	defer res.Close()
-	err = res.Iterate(func(d types.Document) error {
-		var a model.Asset
-		err = document.StructScan(d, &a)
-		if err != nil {
-			return err
-		}
-		as = append(as, a)
-		return nil
-	})
-	if err != nil {
-		return nil, err
+
+	assets, ok := v.([]model.Asset)
+	if !ok {
+		return nil, errors.New("invalid value type")
 	}
-	return as, nil
+	return assets, nil
 }
 
 func (c *Core) QueryAllAsset() ([]string, error) {
-	assets, err := queryStructsFromDb[model.Asset](c.db, "SELECT * FROM ASSET")
+	v, err := c.db.QueryStructs(model.AssetType, "SELECT * FROM ASSET")
 	if err != nil {
 		return nil, err
 	}
+
+	assets, ok := v.([]model.Asset)
+	if !ok {
+		return nil, errors.New("invalid value type")
+	}
+
 	res := make([]string, 0, 10)
 	for _, v := range assets {
 		ps := strings.Join(v.Protocols, ",")
@@ -94,10 +82,16 @@ func (c *Core) QueryAllAsset() ([]string, error) {
 }
 
 func (c *Core) QueryAssetUserInfo() ([]string, error) {
-	aus, err := queryStructsFromDb[model.AssetUserInfo](c.db, "SELECT * FROM ASSETUSERINFO")
+	v, err := c.db.QueryStructs(model.AssetUserInfoType, "SELECT * FROM ASSETUSERINFO")
 	if err != nil {
 		return nil, err
 	}
+
+	aus, ok := v.([]model.AssetUserInfo)
+	if !ok {
+		return nil, errors.New("invalid value type")
+	}
+
 	res := make([]string, 0, 10)
 	for _, v := range aus {
 		var ea string

@@ -1,42 +1,37 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/genjidb/genji"
-	"github.com/genjidb/genji/document"
-	"github.com/genjidb/genji/types"
 	"github.com/handewo/gojump/pkg/model"
 )
 
-func getNodes(db *genji.DB, nodeIDs []string) ([]model.Node, error) {
-	res, err := db.Query("SELECT * from NODE WHERE id IN ?", nodeIDs)
+func (c *Core) getNodes(nodeIDs []string) ([]model.Node, error) {
+	v, err := c.db.QueryStructs(model.NodeType, "SELECT * from NODE WHERE id IN ?", nodeIDs)
 	if err != nil {
 		return nil, err
 	}
-	uas := make([]model.Node, 0, 5)
-	defer res.Close()
-	err = res.Iterate(func(d types.Document) error {
-		var ua model.Node
-		err = document.StructScan(d, &ua)
-		if err != nil {
-			return err
-		}
-		uas = append(uas, ua)
-		return nil
-	})
-	if err != nil {
-		return nil, err
+
+	nodes, ok := v.([]model.Node)
+	if !ok {
+		return nil, errors.New("invalid value type")
 	}
-	return uas, nil
+	return nodes, nil
 }
 
 func (c *Core) QueryAllNode() ([]string, error) {
-	nodes, err := queryStructsFromDb[model.Node](c.db, "SELECT * FROM NODE")
+	v, err := c.db.QueryStructs(model.NodeType, "SELECT * FROM NODE")
 	if err != nil {
 		return nil, err
 	}
+
+	nodes, ok := v.([]model.Node)
+	if !ok {
+		return nil, errors.New("invalid value type")
+	}
+
 	res := make([]string, 0, 10)
 	for _, v := range nodes {
 		as := strings.Join(v.AssetIDs, ",")

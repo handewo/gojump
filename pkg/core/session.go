@@ -29,7 +29,7 @@ func (c *Core) SessionSuccess(id string) error {
 		User:     s.User,
 		Log:      fmt.Sprintf("login to %s successfully", s.Asset),
 	}
-	err := InsertData(c.db, model.InsertUserLog, &log)
+	err := c.db.InsertData("INSERT INTO USERLOG VALUES ?", &log)
 	return err
 }
 
@@ -47,7 +47,7 @@ func (c *Core) SessionFailed(id string, cause error) error {
 		User:     s.User,
 		Log:      fmt.Sprintf("login to %s failed, error: %s", s.Asset, cause),
 	}
-	err := InsertData(c.db, model.InsertUserLog, &log)
+	err := c.db.InsertData("INSERT INTO USERLOG VALUES ?", &log)
 	c.sessLock.Lock()
 	delete(c.session, id)
 	c.sessLock.Unlock()
@@ -68,7 +68,7 @@ func (c *Core) SessionDisconnect(id string) error {
 		User:     s.User,
 		Log:      fmt.Sprintf("disconnected to %s", s.Asset),
 	}
-	err := InsertData(c.db, model.InsertUserLog, &log)
+	err := c.db.InsertData("INSERT INTO USERLOG VALUES ?", &log)
 	c.sessLock.Lock()
 	delete(c.session, id)
 	c.sessLock.Unlock()

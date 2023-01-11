@@ -1,34 +1,32 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
-	"github.com/genjidb/genji/document"
-	"github.com/genjidb/genji/types"
 	"github.com/handewo/gojump/pkg/common"
 	"github.com/handewo/gojump/pkg/log"
 	"github.com/handewo/gojump/pkg/model"
 )
 
 func (c *Core) QueryUserLog() ([]string, error) {
-	log := make([]string, 0, 10)
-	res, err := c.db.Query("SELECT datetime,type,user,log FROM USERLOG")
+	v, err := c.db.QueryStructs(model.UserlogType, "SELECT * FROM USERLOG")
 	if err != nil {
 		return nil, err
 	}
-	defer res.Close()
-	err = res.Iterate(func(d types.Document) error {
-		var dt, t, u, l string
-		err = document.Scan(d, &dt, &t, &u, &l)
-		if err != nil {
-			return err
-		}
-		log = append(log, fmt.Sprintf("%s|%10s|%10s|%s", dt, t, u, l))
-		return nil
-	})
+
+	logs, ok := v.([]model.UserLog)
+	if !ok {
+		return nil, errors.New("invalid value type")
+	}
 	if err != nil {
 		return nil, err
+	}
+
+	log := make([]string, 0, 10)
+	for _, l := range logs {
+		log = append(log, fmt.Sprintf("%s|%10s|%10s|%s", l.Datetime, l.Type, l.User, l.Log))
 	}
 	return log, nil
 }
@@ -41,7 +39,7 @@ func (c *Core) InteractiveLog(user string) {
 		User:     user,
 		Log:      "exit terminal",
 	}
-	err := InsertData(c.db, model.InsertUserLog, &lg)
+	err := c.db.InsertData("INSERT INTO USERLOG VALUES ?", &lg)
 	if err != nil {
 		log.Error.Printf("insert authentication log failed, %s", err)
 	}

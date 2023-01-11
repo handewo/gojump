@@ -1,19 +1,17 @@
 package core
 
 import (
+	"fmt"
 	"os"
 	"sync"
 
-	"github.com/genjidb/genji"
-	"github.com/genjidb/genji/document"
-	"github.com/genjidb/genji/types"
 	"github.com/handewo/gojump/pkg/config"
 	"github.com/handewo/gojump/pkg/log"
 	"github.com/handewo/gojump/pkg/model"
 )
 
 type Core struct {
-	db            *genji.DB
+	db            DB
 	sessLock      sync.RWMutex
 	session       map[string]model.Session
 	otpLock       sync.Mutex
@@ -24,17 +22,16 @@ type Core struct {
 
 func NewCore() *Core {
 
-	path := config.GlobalConfig.DbPath
+	path := config.GlobalConfig.GenjiDbPath
 	_, err := os.Stat(path)
 	if err != nil {
 		log.Fatal.Fatal(err)
 	}
 
-	db, err := genji.Open(path)
+	db, err := newDataBase(config.GlobalConfig.Database)
 	if err != nil {
 		log.Fatal.Fatal(err)
 	}
-
 	session := make(map[string]model.Session, 100)
 	otpass := make(map[string]string, 4)
 	tryLoginCnt := make(map[string]uint64, 10)
@@ -56,22 +53,10 @@ func (c *Core) Close() {
 	log.Debug.Print("database closed")
 }
 
-func (c *Core) GetTerminalConfig() (conf model.TerminalConfig, err error) {
-	res, err := c.db.Query("SELECT * FROM TERMINALCONF")
-	if err != nil {
-		return model.TerminalConfig{}, err
+func newDataBase(db string) (DB, error) {
+	switch db {
+	case "genji":
+		return NewGenji(config.GlobalConfig.GenjiDbPath)
 	}
-	defer res.Close()
-	t := model.TerminalConfig{}
-	err = res.Iterate(func(d types.Document) error {
-		err := document.StructScan(d, &t)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		return model.TerminalConfig{}, err
-	}
-	return t, nil
+	return nil, fmt.Errorf("%s is unsupported", db)
 }
