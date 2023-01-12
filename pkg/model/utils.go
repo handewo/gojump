@@ -8,4 +8,5 @@ const (
 	AssetUserInfoType
 	UserlogType
 	LoginTicketType
+	UserSecretType
 )

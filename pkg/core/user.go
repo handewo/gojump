@@ -80,3 +80,39 @@ func (c *Core) QueryAllUser() ([]string, error) {
 	}
 	return res, nil
 }
+
+func (c *Core) QueryAllUserSecret() ([]string, error) {
+	v, err := c.db.QueryStructs(model.UserSecretType, "SELECT * FROM USERSECRET")
+	if err != nil {
+		return nil, err
+	}
+
+	secrets, ok := v.([]model.UserSecret)
+	if !ok {
+		return nil, errors.New("invalid value type")
+	}
+
+	res := make([]string, 0, 10)
+	for _, v := range secrets {
+		pass := ""
+		key := ""
+		auth := ""
+		if v.Password != "" {
+			pass = "********"
+		}
+		if v.PrivateKey != "" {
+			key = "********"
+		}
+		if v.AuthorizedKeys != nil {
+			ks := make([]string, 0, 5)
+			for i := 0; i < len(v.AuthorizedKeys); i++ {
+				ks = append(ks, "********")
+			}
+			auth = strings.Join(ks, ",")
+		}
+		s := fmt.Sprintf("%4s|%8s|%11s|%s", v.UserID,
+			pass, key, auth)
+		res = append(res, s)
+	}
+	return res, nil
+}

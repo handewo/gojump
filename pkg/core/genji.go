@@ -14,7 +14,7 @@ type Genji struct {
 }
 
 type Model interface {
-	model.Asset | model.Node | model.User | model.SystemUser | model.AssetUserInfo | model.UserLog | model.LoginTicket
+	model.Asset | model.Node | model.User | model.SystemUser | model.AssetUserInfo | model.UserLog | model.LoginTicket | model.UserSecret
 }
 
 func NewGenji(path string) (DB, error) {
@@ -109,6 +109,8 @@ func (g *Genji) QueryStructs(mod int, sql string, cond ...interface{}) (interfac
 		return queryStructs[model.UserLog](g.db, sql, cond...)
 	case model.LoginTicketType:
 		return queryStructs[model.LoginTicket](g.db, sql, cond...)
+	case model.UserSecretType:
+		return queryStructs[model.UserSecret](g.db, sql, cond...)
 	}
 	return nil, errors.New("invalid model type")
 }
