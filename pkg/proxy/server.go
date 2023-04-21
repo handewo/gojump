@@ -16,7 +16,6 @@ import (
 	"github.com/handewo/gojump/pkg/log"
 	"github.com/handewo/gojump/pkg/model"
 	"github.com/handewo/gojump/pkg/srvconn"
-	gossh "golang.org/x/crypto/ssh"
 )
 
 var (
@@ -75,7 +74,7 @@ func NewServer(conn UserConnection, core *core.Core, opts ...ConnectionOption) (
 	}
 
 	if expireInfo == nil {
-		expireInfo, err = core.ValidateAssetConnectPermission(connOpts.user.ID, connOpts.asset.ID)
+		expireInfo, err = core.QueryAssetUserExpire(connOpts.user.ID, connOpts.asset.ID)
 		if err != nil {
 			log.Error.Print(err)
 		}
@@ -320,25 +319,7 @@ func (s *Server) getSSHConn() (srvConn *srvconn.SSHConnection, err error) {
 	loginSystemUser := s.connOpts.systemUser
 	key := srvconn.MakeReuseSSHClientKey(s.connOpts.user.ID, s.connOpts.asset.ID, loginSystemUser.ID,
 		s.connOpts.asset.IP, loginSystemUser.Username)
-	timeout := config.GlobalConfig.SSHTimeout
-	sshAuthOpts := make([]srvconn.SSHClientOption, 0, 6)
-	sshAuthOpts = append(sshAuthOpts, srvconn.SSHClientUsername(loginSystemUser.Username))
-	sshAuthOpts = append(sshAuthOpts, srvconn.SSHClientHost(s.connOpts.asset.IP))
-	sshAuthOpts = append(sshAuthOpts, srvconn.SSHClientPort(s.connOpts.asset.ProtocolPort(loginSystemUser.Protocol)))
-	sshAuthOpts = append(sshAuthOpts, srvconn.SSHClientPassword(loginSystemUser.Password))
-	sshAuthOpts = append(sshAuthOpts, srvconn.SSHClientTimeout(timeout))
-	if loginSystemUser.PrivateKey != "" {
-		// 先使用 password 解析 PrivateKey
-		if signer, err1 := gossh.ParsePrivateKeyWithPassphrase([]byte(loginSystemUser.PrivateKey),
-			[]byte(loginSystemUser.Password)); err1 == nil {
-			sshAuthOpts = append(sshAuthOpts, srvconn.SSHClientPrivateAuth(signer))
-		} else {
-			// 如果之前使用password解析失败，则去掉 password, 尝试直接解析 PrivateKey 防止错误的passphrase
-			if signer, err1 = gossh.ParsePrivateKey([]byte(loginSystemUser.PrivateKey)); err1 == nil {
-				sshAuthOpts = append(sshAuthOpts, srvconn.SSHClientPrivateAuth(signer))
-			}
-		}
-	}
+	sshAuthOpts := srvconn.BuildSSHClientOptions(s.connOpts.asset, loginSystemUser)
 	password := loginSystemUser.Password
 	privateKey := loginSystemUser.PrivateKey
 	kb := srvconn.SSHClientKeyboardAuth(func(user, instruction string,

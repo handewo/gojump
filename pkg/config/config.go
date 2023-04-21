@@ -28,6 +28,8 @@ type Config struct {
 	RetryAliveCountMax int    `mapstructure:"RETRY_ALIVE_COUNT_MAX" json:"RETRY_ALIVE_COUNT_MAX"`
 	ReuseConnection    bool   `mapstructure:"REUSE_CONNECTION" json:"REUSE_CONNECTION"`
 	DisableRecorder    bool   `mapstructure:"DISABLE_RECORDER" json:"DISABLE_RECORDER"`
+
+	EnableLocalPortForward bool `mapstructure:"ENABLE_LOCAL_PORT_FORWARD" json:"ENABLE_LOCAL_PORT_FORWARD"`
 }
 
 var GlobalConfig *Config

@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/handewo/gojump/pkg/model"
@@ -20,7 +21,7 @@ func doPublicKeyMatch(authKeys []string, currPubkey string) bool {
 	return false
 }
 
-func (c *Core) ValidateAssetConnectPermission(userID string, assetID string) (*model.ExpireInfo,
+func (c *Core) QueryAssetUserExpire(userID string, assetID string) (*model.ExpireInfo,
 	error) {
 	var expireat int64
 	err := c.db.QueryOneField(&expireat,
@@ -51,4 +52,31 @@ func doPasswordsMatch(hashedPassword, currPassword string) bool {
 	err := bcrypt.CompareHashAndPassword(
 		[]byte(hashedPassword), []byte(currPassword))
 	return err == nil
+}
+
+func (c *Core) QueryDirectLoginInfo(userID string, directLogin map[string]string) (asset model.Asset,
+	sysUser model.SystemUser, err error) {
+	asset, err = c.GetAssetByName(directLogin["asset"])
+	if err != nil {
+		return
+	}
+	if asset.ID == "" {
+		err = fmt.Errorf("asset %s not found", directLogin["asset"])
+		return
+	}
+
+	sysUsers, err := c.GetSystemUsersByUserIdAndAssetId(userID, asset.ID)
+	if err != nil {
+		return
+	}
+	for _, v := range sysUsers {
+		if v.Username == directLogin["sysuser"] {
+			sysUser = v
+		}
+	}
+	if sysUser.ID == "" {
+		err = fmt.Errorf("system user %s not found", directLogin["sysuser"])
+		return
+	}
+	return
 }

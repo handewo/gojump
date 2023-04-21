@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -16,6 +17,7 @@ import (
 	"github.com/handewo/gojump/pkg/log"
 	"github.com/handewo/gojump/pkg/model"
 	"github.com/pires/go-proxyproto"
+	gossh "golang.org/x/crypto/ssh"
 )
 
 type server struct {
@@ -23,6 +25,7 @@ type server struct {
 	core         *core.Core
 	srv          *ssh.Server
 	sync.Mutex
+	vscodeClients map[string]*vscodeReq
 }
 
 func (s *server) updateTermCfgPeriodcally() {
@@ -67,7 +70,8 @@ func NewServer(c *core.Core) *server {
 		log.Fatal.Fatal(err)
 	}
 	srv := server{
-		core: c,
+		core:          c,
+		vscodeClients: make(map[string]*vscodeReq),
 	}
 	srv.UpdateTerminalConfig(terminalConf)
 	go srv.updateTermCfgPeriodcally()
@@ -107,9 +111,34 @@ func (s *server) initSSHServer() {
 		},
 		HostSigners: []ssh.Signer{s.GetSSHSigner()},
 		Handler:     s.SessionHandler,
+		LocalPortForwardingCallback: func(ctx ssh.Context, destinationHost string, destinationPort uint32) bool {
+			return s.LocalPortForwardingPermission(ctx, destinationHost, destinationPort)
+		},
 		ChannelHandlers: map[string]ssh.ChannelHandler{
 			"session": ssh.DefaultSessionHandler,
+			"direct-tcpip": func(srv *ssh.Server, conn *gossh.ServerConn, newChan gossh.NewChannel, ctx ssh.Context) {
+				localD := localForwardChannelData{}
+				if err := gossh.Unmarshal(newChan.ExtraData(), &localD); err != nil {
+					_ = newChan.Reject(gossh.ConnectionFailed, "error parsing forward data: "+err.Error())
+					return
+				}
+
+				if srv.LocalPortForwardingCallback == nil || !srv.LocalPortForwardingCallback(ctx, localD.DestAddr, localD.DestPort) {
+					_ = newChan.Reject(gossh.Prohibited, "port forwarding is disabled")
+					return
+				}
+				dest := net.JoinHostPort(localD.DestAddr, strconv.FormatInt(int64(localD.DestPort), 10))
+				s.DirectTCPIPChannelHandler(ctx, newChan, dest)
+			},
 		},
 	}
 	s.srv = srv
+}
+
+type localForwardChannelData struct {
+	DestAddr string
+	DestPort uint32
+
+	OriginAddr string
+	OriginPort uint32
 }

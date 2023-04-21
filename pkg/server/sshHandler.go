@@ -1,7 +1,11 @@
 package server
 
 import (
+	"errors"
+	"fmt"
+	"io"
 	"net"
+	"time"
 
 	"github.com/gliderlabs/ssh"
 	"github.com/handewo/gojump/pkg/auth"
@@ -10,6 +14,8 @@ import (
 	"github.com/handewo/gojump/pkg/handler"
 	"github.com/handewo/gojump/pkg/log"
 	"github.com/handewo/gojump/pkg/model"
+	"github.com/handewo/gojump/pkg/srvconn"
+	gossh "golang.org/x/crypto/ssh"
 )
 
 const (
@@ -91,9 +97,139 @@ func (s *server) SessionHandler(sess ssh.Session) {
 		interactiveSrv.Dispatch()
 		common.IgnoreErrWriteWindowTitle(sess, termConf.HeaderTitle)
 		return
-	} else {
+	}
+
+	if !config.GlobalConfig.EnableLocalPortForward {
 		common.IgnoreErrWriteString(sess, "No PTY requested.\n")
 		return
 	}
 
+	if directLogin, ok := directLogin.(map[string]string); ok {
+		if err := s.proxyVscode(sess, user, directLogin); err != nil {
+			log.Error.Printf("User %s login vscode err: %s", user.Username, err)
+		}
+		return
+	}
+
+}
+
+func (s *server) LocalPortForwardingPermission(ctx ssh.Context, destinationHost string, destinationPort uint32) bool {
+	return config.GlobalConfig.EnableLocalPortForward
+}
+
+func (s *server) DirectTCPIPChannelHandler(ctx ssh.Context, newChan gossh.NewChannel, destAddr string) {
+	reqId, ok := ctx.Value(ctxID).(string)
+	if !ok {
+		_ = newChan.Reject(gossh.Prohibited, "port forwarding is disabled")
+		return
+	}
+	vsReq := s.getVSCodeReq(reqId)
+	if vsReq == nil {
+		_ = newChan.Reject(gossh.Prohibited, "port forwarding is disabled")
+		return
+	}
+	dConn, err := vsReq.client.Dial("tcp", destAddr)
+	if err != nil {
+		_ = newChan.Reject(gossh.ConnectionFailed, err.Error())
+		return
+	}
+	defer dConn.Close()
+	ch, reqs, err := newChan.Accept()
+	if err != nil {
+		_ = dConn.Close()
+		_ = newChan.Reject(gossh.ConnectionFailed, err.Error())
+		return
+	}
+	log.Info.Printf("User %s start port forwarding from (%s) to (%s)", vsReq.user,
+		vsReq.client, destAddr)
+	defer ch.Close()
+	go gossh.DiscardRequests(reqs)
+	go func() {
+		defer ch.Close()
+		defer dConn.Close()
+		_, _ = io.Copy(ch, dConn)
+	}()
+	_, _ = io.Copy(dConn, ch)
+	log.Info.Printf("User %s end port forwarding from (%s) to (%s)", vsReq.user,
+		vsReq.client, destAddr)
+}
+
+func (s *server) proxyVscode(sess ssh.Session, user *model.User, directLogin map[string]string) error {
+	asset, sysUser, err := s.core.QueryDirectLoginInfo(user.ID, directLogin)
+	if err != nil {
+		return err
+	}
+	ctxId, ok := sess.Context().Value(ctxID).(string)
+	if !ok {
+		return errors.New("not found ctxID")
+	}
+	expireInfo, err := s.core.QueryAssetUserExpire(user.ID, asset.ID)
+	if err != nil {
+		return fmt.Errorf("get asset expire info err: %s", err)
+	}
+	sshAuthOpts := srvconn.BuildSSHClientOptions(&asset, &sysUser)
+	sshClient, err := srvconn.NewSSHClient(sshAuthOpts...)
+	if err != nil {
+		return fmt.Errorf("get SSH Client failed: %s", err)
+	}
+	defer sshClient.Close()
+	vsReq := &vscodeReq{
+		reqId:      ctxId,
+		user:       user,
+		client:     sshClient,
+		expireInfo: expireInfo,
+	}
+	if err = s.proxyVscodeShell(sess, vsReq, sshClient); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *server) proxyVscodeShell(sess ssh.Session, vsReq *vscodeReq, sshClient *srvconn.SSHClient) error {
+	goSess, err := sshClient.AcquireSession()
+	if err != nil {
+		return fmt.Errorf("get SSH session failed: %s", err)
+	}
+	defer goSess.Close()
+	defer sshClient.ReleaseSession(goSess)
+	stdOut, err := goSess.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("get SSH session StdoutPipe failed: %s", err)
+	}
+	stdin, err := goSess.StdinPipe()
+	if err != nil {
+		return fmt.Errorf("get SSH session StdinPipe failed: %s", err)
+	}
+	err = goSess.Shell()
+	if err != nil {
+		return fmt.Errorf("get SSH session shell failed: %s", err)
+	}
+	log.Info.Printf("User %s start vscode request to %s", vsReq.user, sshClient)
+
+	s.addVSCodeReq(vsReq)
+	defer s.deleteVSCodeReq(vsReq)
+	go func() {
+		_, _ = io.Copy(stdin, sess)
+		log.Info.Printf("User %s vscode request %s stdin end", vsReq.user, sshClient)
+	}()
+	go func() {
+		_, _ = io.Copy(sess, stdOut)
+		log.Info.Printf("User %s vscode request %s stdOut end", vsReq.user, sshClient)
+	}()
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-sess.Context().Done():
+			log.Info.Printf("SSH conn[%s] User %s end vscode request %s as session done",
+				vsReq.reqId, vsReq.user, sshClient)
+			return nil
+		case now := <-ticker.C:
+			if vsReq.expireInfo.IsExpired(now) {
+				log.Info.Printf("SSH conn[%s] User %s end vscode request %s as permission has expired",
+					vsReq.reqId, vsReq.user, sshClient)
+				return nil
+			}
+		}
+	}
 }

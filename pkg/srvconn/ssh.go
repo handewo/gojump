@@ -10,7 +10,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/handewo/gojump/pkg/config"
 	"github.com/handewo/gojump/pkg/log"
+	"github.com/handewo/gojump/pkg/model"
 	gossh "golang.org/x/crypto/ssh"
 )
 
@@ -383,3 +385,26 @@ var (
 		"diffie-hellman-group-exchange-sha256",
 	}
 )
+
+func BuildSSHClientOptions(asset *model.Asset, systemUser *model.SystemUser) []SSHClientOption {
+	timeout := config.GlobalConfig.SSHTimeout
+	sshAuthOpts := make([]SSHClientOption, 0, 6)
+	sshAuthOpts = append(sshAuthOpts, SSHClientUsername(systemUser.Username))
+	sshAuthOpts = append(sshAuthOpts, SSHClientHost(asset.IP))
+	sshAuthOpts = append(sshAuthOpts, SSHClientPort(asset.ProtocolPort(systemUser.Protocol)))
+	sshAuthOpts = append(sshAuthOpts, SSHClientPassword(systemUser.Password))
+	sshAuthOpts = append(sshAuthOpts, SSHClientTimeout(timeout))
+	if systemUser.PrivateKey != "" {
+		// 先使用 password 解析 PrivateKey
+		if signer, err1 := gossh.ParsePrivateKeyWithPassphrase([]byte(systemUser.PrivateKey),
+			[]byte(systemUser.Password)); err1 == nil {
+			sshAuthOpts = append(sshAuthOpts, SSHClientPrivateAuth(signer))
+		} else {
+			// 如果之前使用password解析失败，则去掉 password, 尝试直接解析 PrivateKey 防止错误的passphrase
+			if signer, err1 = gossh.ParsePrivateKey([]byte(systemUser.PrivateKey)); err1 == nil {
+				sshAuthOpts = append(sshAuthOpts, SSHClientPrivateAuth(signer))
+			}
+		}
+	}
+	return sshAuthOpts
+}

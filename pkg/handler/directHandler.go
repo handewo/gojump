@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"fmt"
-
 	"github.com/gliderlabs/ssh"
 	"github.com/handewo/gojump/pkg/common"
 	"github.com/handewo/gojump/pkg/core"
@@ -28,26 +26,9 @@ func NewDirectHandler(sess ssh.Session, core *core.Core, user *model.User,
 		wrapperSess *WrapperSession
 		term        *common.Terminal
 	)
-	asset, err := core.GetAssetByName(directLogin["asset"])
+	asset, sysUser, err := core.QueryDirectLoginInfo(user.ID, directLogin)
 	if err != nil {
 		return nil, err
-	}
-	if asset.ID == "" {
-		return nil, fmt.Errorf("asset %s not found", directLogin["asset"])
-	}
-
-	sysUsers, err := core.GetSystemUsersByUserIdAndAssetId(user.ID, asset.ID)
-	if err != nil {
-		return nil, err
-	}
-	var sysUser model.SystemUser
-	for _, v := range sysUsers {
-		if v.Username == directLogin["sysuser"] {
-			sysUser = v
-		}
-	}
-	if sysUser.ID == "" {
-		return nil, fmt.Errorf("system user %s not found", directLogin["sysuser"])
 	}
 
 	wrapperSess = NewWrapperSession(sess)

@@ -6,15 +6,6 @@ import (
 	"strings"
 )
 
-const LoginModeManual = "manual"
-
-const (
-	AllAction      = "all"
-	ConnectAction  = "connect"
-	UploadAction   = "upload_file"
-	DownloadAction = "download_file"
-)
-
 type SystemUser struct {
 	ID         string `json:"id"`
 	Username   string `json:"username"`
