@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net"
+	"strings"
 
 	"github.com/gliderlabs/ssh"
 	"github.com/handewo/gojump/pkg/core"
@@ -10,8 +11,9 @@ import (
 )
 
 const (
-	ContextKeyUser   = "CONTEXT_USER"
-	ContextKeyClient = "CONTEXT_CLIENT"
+	ContextKeyUser              = "CONTEXT_USER"
+	ContextKeyClient            = "CONTEXT_CLIENT"
+	ContextKeyDirectLoginFormat = "CONTEXT_DIRECT_LOGIN_FORMAT"
 )
 
 type SSHAuthFunc func(ctx ssh.Context, password, publicKey string) bool
@@ -24,6 +26,10 @@ func SSHPasswordAndPublicKeyAuth(c *core.Core) SSHAuthFunc {
 		if password != "" {
 			authMethod = "password"
 		}
+		if res, ok := parseUserFormatBySeparator(ctx.User()); ok {
+			ctx.SetValue(ContextKeyDirectLoginFormat, res)
+			username = res["username"]
+		}
 		userAuthClient, ok := ctx.Value(ContextKeyClient).(*UserAuthClient)
 		if !ok {
 			userAuthClient = &UserAuthClient{
@@ -34,7 +40,7 @@ func SSHPasswordAndPublicKeyAuth(c *core.Core) SSHAuthFunc {
 		}
 		userAuthClient.SetOption(model.UserClientPassword(password),
 			model.UserClientPublicKey(publicKey), model.UserClientRemoteAddr(remoteAddr))
-		user, res := userAuthClient.Authenticate(ctx)
+		user, res := userAuthClient.Authenticate(username)
 		switch res {
 		case AuthSuccess:
 			ctx.SetValue(ContextKeyUser, &user)
@@ -50,4 +56,17 @@ func SSHPasswordAndPublicKeyAuth(c *core.Core) SSHAuthFunc {
 		}
 		return false
 	}
+}
+
+func parseUserFormatBySeparator(s string) (map[string]string, bool) {
+	authInfos := strings.Split(s, "@")
+	if len(authInfos) != 3 {
+		return nil, false
+	}
+	res := map[string]string{
+		"username": authInfos[0],
+		"sysuser":  authInfos[1],
+		"asset":    authInfos[2],
+	}
+	return res, true
 }

@@ -3,7 +3,6 @@ package auth
 import (
 	"time"
 
-	"github.com/gliderlabs/ssh"
 	"github.com/handewo/gojump/pkg/core"
 	"github.com/handewo/gojump/pkg/log"
 	"github.com/handewo/gojump/pkg/model"
@@ -24,8 +23,7 @@ func (u *UserAuthClient) SetOption(setters ...model.UserClientOption) {
 	u.UserClient.SetOption(setters...)
 }
 
-func (u *UserAuthClient) Authenticate(ctx ssh.Context) (model.User, int) {
-	username := ctx.User()
+func (u *UserAuthClient) Authenticate(username string) (model.User, int) {
 	if u.Core.UserIsBlocked(username) {
 		return model.User{}, AuthBlock
 	}

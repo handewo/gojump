@@ -66,7 +66,20 @@ func (s *server) SessionHandler(sess ssh.Session) {
 		return
 	}
 	termConf := s.GetTerminalConfig()
+	directLogin := sess.Context().Value(auth.ContextKeyDirectLoginFormat)
+
 	if pty, winChan, isPty := sess.Pty(); isPty {
+		if directLogin, ok := directLogin.(map[string]string); ok {
+			handler, err := handler.NewDirectHandler(sess, s.core, user, directLogin)
+			if err != nil {
+				log.Error.Printf("User %s direct handler err: %s", user.Username, err)
+				return
+			}
+			if err := handler.Proxy(); err != nil {
+				log.Error.Printf("User %s direct proxy err: %s", user.Username, err)
+			}
+			return
+		}
 		interactiveSrv := handler.NewInteractiveHandler(sess, user, s.core, termConf)
 		defer s.core.InteractiveLog(sess.User())
 		log.Debug.Printf("User %s request pty %s", sess.User(), pty.Term)

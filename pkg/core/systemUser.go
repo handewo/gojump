@@ -13,11 +13,11 @@ func (c *Core) GetSystemUsersByUserIdAndAssetId(userID string, assetID string) (
 	if err != nil {
 		return nil, err
 	}
-	sysUsers, err = c.getSystemUser(sysIDs)
+	sysUsers, err = c.getSystemUsers(sysIDs)
 	return
 }
 
-func (c *Core) getSystemUser(ids []string) ([]model.SystemUser, error) {
+func (c *Core) getSystemUsers(ids []string) ([]model.SystemUser, error) {
 	v, err := c.db.QueryStructs(model.SystemUserType, "Select * from SYSTEMUSER WHERE id IN ?", ids)
 	if err != nil {
 		return nil, err

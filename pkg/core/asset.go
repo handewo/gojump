@@ -16,6 +16,12 @@ func (c *Core) GetAssetById(assetID string) (model.Asset, error) {
 	return asset, err
 }
 
+func (c *Core) GetAssetByName(name string) (model.Asset, error) {
+	asset := model.Asset{}
+	err := c.db.QueryStruct(&asset, "SELECT * from ASSET WHERE name = ?", name)
+	return asset, err
+}
+
 func (c *Core) GetAllUserPermsAssets(nodeIDs []string) ([]map[string]interface{}, model.NodeList, error) {
 	nas, err := c.getNodes(nodeIDs)
 	if err != nil {
