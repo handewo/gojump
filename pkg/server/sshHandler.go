@@ -187,10 +187,7 @@ func (s *server) proxyVscode(sess ssh.Session, user *model.User, directLogin map
 		client:     sshClient,
 		expireInfo: expireInfo,
 	}
-	if err = s.proxyVscodeShell(sess, vsReq, sshClient); err != nil {
-		return err
-	}
-	return nil
+	return s.proxyVscodeShell(sess, vsReq, sshClient)
 }
 
 func (s *server) proxyVscodeShell(sess ssh.Session, vsReq *vscodeReq, sshClient *srvconn.SSHClient) error {
