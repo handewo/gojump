@@ -137,7 +137,7 @@ func (h *InteractiveHandler) listTable(table string) {
 			log.Error.Printf("query error from ASSETUSER, %s", err)
 			return
 		}
-		title = "        ID|User ID|Asset ID|      Expire At    |Need Confirm|System User IDs"
+		title = "        ID|User ID|Asset ID|      Expire At    |Need Confirm|Enable VS Code|System User IDs"
 	case "SECRET":
 		rows, err = h.core.QueryAllUserSecret()
 		if err != nil {

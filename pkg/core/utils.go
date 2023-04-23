@@ -34,6 +34,16 @@ func (c *Core) QueryAssetUserExpire(userID string, assetID string) (*model.Expir
 	}, nil
 }
 
+func (c *Core) QueryAssetUserVscodePerm(userID string, assetID string) (bool, error) {
+	var enable bool
+	err := c.db.QueryOneField(&enable,
+		"SELECT enablevscode FROM ASSETUSERINFO where userid = ? and assetid = ?", userID, assetID)
+	if err != nil {
+		return false, err
+	}
+	return enable, nil
+}
+
 func (c *Core) GetTerminalConfig() (model.TerminalConfig, error) {
 	t := model.TerminalConfig{}
 	err := c.db.QueryStruct(&t, "SELECT * FROM TERMINALCONF")

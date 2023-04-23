@@ -167,6 +167,14 @@ func (s *server) proxyVscode(sess ssh.Session, user *model.User, directLogin map
 	if err != nil {
 		return fmt.Errorf("get asset expire info err: %s", err)
 	}
+	vscodePerm, err := s.core.QueryAssetUserVscodePerm(user.ID, asset.ID)
+	if err != nil {
+		return fmt.Errorf("get asset expire info err: %s", err)
+	}
+	if !vscodePerm {
+		log.Info.Printf("%s has no permission to login to %s in vscode", user.Username, asset.Name)
+		return nil
+	}
 	sshAuthOpts := srvconn.BuildSSHClientOptions(&asset, &sysUser)
 	sshClient, err := srvconn.NewSSHClient(sshAuthOpts...)
 	if err != nil {

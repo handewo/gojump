@@ -12,6 +12,7 @@ It's very appropriate for light usage.
 
 ## Features
 - Support SSH protocal
+- Support VS Code(dangerous)
 - Once time password
 - Login confirm
 - Record replay based on [asciicast v2](https://github.com/asciinema/asciinema/blob/develop/doc/asciicast-v2.md)

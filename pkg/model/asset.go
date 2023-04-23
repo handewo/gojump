@@ -24,12 +24,13 @@ type Asset struct {
 }
 
 type AssetUserInfo struct {
-	ID          string
-	UserID      string
-	AssetID     string
-	ExpireAt    int64
-	SysUserID   []string
-	NeedConfirm bool
+	ID           string
+	UserID       string
+	AssetID      string
+	ExpireAt     int64
+	SysUserID    []string
+	EnableVscode bool
+	NeedConfirm  bool
 }
 
 func (a *Asset) String() string {

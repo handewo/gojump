@@ -12,7 +12,7 @@ require (
 	github.com/spf13/viper v1.14.0
 	github.com/xlab/treeprint v1.1.0
 	golang.org/x/crypto v0.5.0
-	golang.org/x/text v0.6.0
+	golang.org/x/text v0.6.0 // indirect
 )
 
 require (

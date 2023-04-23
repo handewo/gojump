@@ -106,8 +106,8 @@ func (c *Core) QueryAssetUserInfo() ([]string, error) {
 			ea = "9999-12-31 23:59:59"
 		}
 		si := strings.Join(v.SysUserID, ",")
-		s := fmt.Sprintf("%4s|%7s|%8s|%s|%12v|%s",
-			v.ID, v.UserID, v.AssetID, ea, v.NeedConfirm, si)
+		s := fmt.Sprintf("%4s|%7s|%8s|%s|%12v|%14v|%s",
+			v.ID, v.UserID, v.AssetID, ea, v.NeedConfirm, v.EnableVscode, si)
 		res = append(res, s)
 	}
 	return res, nil

@@ -44,3 +44,17 @@ func (c *Core) InteractiveLog(user string) {
 		log.Error.Printf("insert authentication log failed, %s", err)
 	}
 }
+
+func (c *Core) InsertLog(tp, user, msg string) {
+	date := time.Now().Format(common.LogFormat)
+	lg := model.UserLog{
+		Datetime: date,
+		Type:     tp,
+		User:     user,
+		Log:      msg,
+	}
+	err := c.db.InsertData("INSERT INTO USERLOG VALUES ?", &lg)
+	if err != nil {
+		log.Error.Printf("insert log failed, %s", err)
+	}
+}

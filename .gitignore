@@ -9,3 +9,4 @@ initProDB
 !pkg/initDB
 !cmd/initDB
 pkg/initDB/initProData.go
+todo.md
