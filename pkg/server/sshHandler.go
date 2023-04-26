@@ -221,18 +221,25 @@ func (s *server) proxyVscodeShell(sess ssh.Session, vsReq *vscodeReq, sshClient 
 		_, _ = io.Copy(sess, stdOut)
 		log.Info.Printf("User %s vscode request %s stdOut end", vsReq.user, sshClient)
 	}()
+	maxConnectTime := time.Duration(8) * time.Hour
+	timeout := time.NewTicker(maxConnectTime)
+	defer timeout.Stop()
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-sess.Context().Done():
 			log.Info.Printf("SSH conn[%s] User %s end vscode request %s as session done",
-				vsReq.reqId, vsReq.user, sshClient)
+				vsReq.reqId[:10], vsReq.user, sshClient)
+			return nil
+		case <-timeout.C:
+			log.Info.Printf("SSH conn[%s] User %s end vscode request %s as timeout",
+				vsReq.reqId[:10], vsReq.user, sshClient)
 			return nil
 		case now := <-ticker.C:
 			if vsReq.expireInfo.IsExpired(now) {
 				log.Info.Printf("SSH conn[%s] User %s end vscode request %s as permission has expired",
-					vsReq.reqId, vsReq.user, sshClient)
+					vsReq.reqId[:10], vsReq.user, sshClient)
 				return nil
 			}
 		}
